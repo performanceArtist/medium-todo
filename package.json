@@ -18,7 +18,7 @@
   "dependencies": {},
   "devDependencies": {
     "@performance-artist/fp-ts-adt": "^1.0.11",
-    "@performance-artist/medium": "^1.0.3",
+    "@performance-artist/medium": "^1.0.4",
     "@performance-artist/react-utils": "^1.0.4",
     "@performance-artist/rx-utils": "^1.0.3",
     "@types/html-webpack-plugin": "^3.2.3",
@@ -41,7 +41,6 @@
     "ts-jest": "^26.4.4",
     "ts-loader": "^6.2.2",
     "ts-node": "^8.10.2",
-    "ts-toolbelt": "^8.0.7",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.1.3",
     "webpack": "^4.44.1",
