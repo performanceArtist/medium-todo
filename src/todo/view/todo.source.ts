@@ -1,4 +1,4 @@
-import { source } from '@performance-artist/medium';
+import { source, SourceOf } from '@performance-artist/medium';
 import {
   requestResult,
   RequestResult,
@@ -21,13 +21,21 @@ const initialState: TodoState = {
   todos: requestResult.initial,
 };
 
-export const makeTodoSource = () =>
+export type TodoSource = SourceOf<
+  TodoState,
+  {
+    getTodos: void;
+    toggleDone: number;
+  }
+>;
+
+export const makeTodoSource = (): TodoSource =>
   source.create(
     'todo',
     initialState,
   )({
-    getTodos: source.input<void>(),
-    toggleDone: state => (id: number) => ({
+    getTodos: source.input(),
+    toggleDone: state => id => ({
       ...state,
       todos: pipe(
         state.todos,
@@ -39,8 +47,6 @@ export const makeTodoSource = () =>
       ),
     }),
   });
-
-export type TodoSource = ReturnType<typeof makeTodoSource>;
 
 const getStats = pipe(
   selector.focus<TodoState>()('todos'),

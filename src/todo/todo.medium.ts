@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/lib/pipeable';
 import * as rxo from 'rxjs/operators';
 import { array, option } from 'fp-ts';
 import { TodoSource } from './view/todo.source';
-import { TodoApi } from './api';
+import { TodoApi } from './todo.api';
 
 type Deps = {
   todoApi: TodoApi;
