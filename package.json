@@ -18,7 +18,7 @@
   "dependencies": {},
   "devDependencies": {
     "@performance-artist/fp-ts-adt": "^1.0.11",
-    "@performance-artist/medium": "^1.0.7",
+    "@performance-artist/medium": "^2.0.0",
     "@performance-artist/react-utils": "^1.0.4",
     "@performance-artist/rx-utils": "^1.0.3",
     "@types/html-webpack-plugin": "^3.2.3",
