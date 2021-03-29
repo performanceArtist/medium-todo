@@ -1,4 +1,4 @@
-import { ray, medium } from '@performance-artist/medium';
+import { effect, medium } from '@performance-artist/medium';
 import { pipe } from 'fp-ts/lib/pipeable';
 import * as rxo from 'rxjs/operators';
 import { array, option } from 'fp-ts';
@@ -15,15 +15,15 @@ export const todoMedium = medium.map(
   (deps, on) => {
     const { todoApi, todoSource } = deps;
 
-    const setTodos$ = pipe(
+    const setTodos = pipe(
       on(todoSource.create('getTodos')),
       rxo.switchMap(todoApi.getTodos),
-      ray.infer(todos =>
+      effect.tag('setTodos', todos =>
         todoSource.state.modify(state => ({ ...state, todos })),
       ),
     );
 
-    const updateTodo$ = pipe(
+    const updateTodo = pipe(
       on(todoSource.create('toggleDone')),
       rxo.withLatestFrom(todoSource.state.value$),
       rxo.map(([id, state]) =>
@@ -33,7 +33,7 @@ export const todoMedium = medium.map(
           option.chain(array.findFirst(todo => todo.id === id)),
         ),
       ),
-      ray.infer(todo => {
+      effect.tag('updateTodo', todo => {
         if (option.isSome(todo)) {
           todoApi.updateTodo(todo.value);
         }
@@ -41,8 +41,8 @@ export const todoMedium = medium.map(
     );
 
     return {
-      setTodos$,
-      updateTodo$,
+      setTodos,
+      updateTodo,
     };
   },
 );

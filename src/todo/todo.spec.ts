@@ -24,7 +24,7 @@ describe('todo', () => {
         todoSource.dispatch('getTodos')();
 
         expect(history.take()).toStrictEqual([
-          output('setTodos$')(requestResult.success([])),
+          output('setTodos')(requestResult.success([])),
         ]);
       },
     ),
@@ -53,12 +53,12 @@ describe('todo', () => {
 
         todoSource.dispatch('toggleDone')(0);
         expect(history.take()).toStrictEqual([
-          output('updateTodo$')(option.none),
+          output('updateTodo')(option.none),
         ]);
 
         todoSource.dispatch('toggleDone')(1);
         expect(history.take()).toStrictEqual([
-          output('updateTodo$')(option.some({ id: 1, text: '', done: true })),
+          output('updateTodo')(option.some({ id: 1, text: '', done: true })),
         ]);
       },
     ),
