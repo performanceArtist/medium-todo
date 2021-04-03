@@ -2,10 +2,11 @@ import { requestResult } from '@performance-artist/fp-ts-adt';
 import { option } from 'fp-ts';
 import * as rx from 'rxjs';
 import { test } from '@performance-artist/medium';
-import { todoMedium } from './todo.medium';
+import { rawTodoMedium } from './todo.medium';
 import { makeTodoSource } from './view/todo.source';
+import { makeLoggerSource } from 'logger/view/logger.source';
 
-const withTodo = test.withMedium(todoMedium);
+const withTodo = test.withMedium(rawTodoMedium);
 
 describe('todo', () => {
   it(
@@ -17,6 +18,7 @@ describe('todo', () => {
           getTodos: () => rx.of(requestResult.success([])),
           updateTodo: () => {},
         },
+        loggerSource: makeLoggerSource(),
       }),
       (deps, history, output) => {
         const { todoSource } = deps;
@@ -46,6 +48,7 @@ describe('todo', () => {
             getTodos: () => rx.of(requestResult.success([])),
             updateTodo: () => {},
           },
+          loggerSource: makeLoggerSource(),
         };
       },
       (deps, history, output) => {

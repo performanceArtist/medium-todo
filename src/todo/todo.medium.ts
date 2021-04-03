@@ -4,13 +4,14 @@ import * as rxo from 'rxjs/operators';
 import { array, option } from 'fp-ts';
 import { TodoSource } from './view/todo.source';
 import { TodoApi } from './todo.api';
+import { fromMedium } from 'logger/logger.medium';
 
 type Deps = {
   todoApi: TodoApi;
   todoSource: TodoSource;
 };
 
-export const todoMedium = medium.map(
+export const rawTodoMedium = medium.map(
   medium.id<Deps>()('todoApi', 'todoSource'),
   (deps, on) => {
     const { todoApi, todoSource } = deps;
@@ -46,3 +47,5 @@ export const todoMedium = medium.map(
     };
   },
 );
+
+export const todoMedium = fromMedium(rawTodoMedium);
