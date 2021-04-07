@@ -1,4 +1,5 @@
 import { carrier, effect, medium, Source } from '@performance-artist/medium';
+import { record } from 'fp-ts';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { LoggerSource } from './view/logger.source';
 
@@ -10,8 +11,14 @@ export const fromSource = <S extends Source<any, any>>(s: S) =>
   medium.map(medium.id<LoggerDeps>()('loggerSource'), deps => {
     const { loggerSource } = deps;
 
+    const action$ = pipe(
+      s.on,
+      record.map(({ value }) => value),
+      carrier.mergeInputs,
+    );
+
     const addLogEntry = pipe(
-      s.action$,
+      action$,
       effect.partial(({ type, payload }) =>
         loggerSource.state.modify(state => ({
           ...state,
@@ -21,7 +28,7 @@ export const fromSource = <S extends Source<any, any>>(s: S) =>
     );
 
     const consoleLog = pipe(
-      s.action$,
+      action$,
       effect.partial(action =>
         console.log('[in]', action.type, action.payload),
       ),
@@ -32,7 +39,7 @@ export const fromSource = <S extends Source<any, any>>(s: S) =>
 
 export const fromMedium = medium.decorateAny(
   medium.id<LoggerDeps>()('loggerSource'),
-)((deps, _, [__, effects]) => {
+)((deps, [_, effects]) => {
   const { loggerSource } = deps;
   const action$ = carrier.mergeInputs(effects);
 

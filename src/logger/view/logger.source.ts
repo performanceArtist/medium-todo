@@ -18,4 +18,4 @@ const initialState: LoggerState = {
 export type LoggerSource = SourceOf<LoggerState, {}>;
 
 export const makeLoggerSource = (): LoggerSource =>
-  source.create('logger', initialState)({});
+  source.create(initialState, {});

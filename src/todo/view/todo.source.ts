@@ -30,10 +30,7 @@ export type TodoSource = SourceOf<
 >;
 
 export const makeTodoSource = (): TodoSource =>
-  source.create(
-    'todo',
-    initialState,
-  )({
+  source.create(initialState, {
     getTodos: source.input(),
     toggleDone: state => id => ({
       ...state,

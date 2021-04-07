@@ -5,7 +5,7 @@ import { makeTodoSource } from '../todo.source';
 import { TodoLayout } from '../components/layout';
 import { todoMedium } from 'todo/todo.medium';
 import { useSubscription, useBehavior } from '@performance-artist/react-utils';
-import { medium } from '@performance-artist/medium';
+import { medium, source } from '@performance-artist/medium';
 import { fromSource } from 'logger/logger.medium';
 import { LoggerSource } from 'logger/view/logger.source';
 
@@ -18,6 +18,7 @@ export const TodoLayoutContainer = pipe(
   selector.map(([TodoLayout, todoMedium, loggerSource]) =>
     memo(() => {
       const todoSource = useMemo(makeTodoSource, []);
+      useSubscription(() => source.subscribe(todoSource), [todoSource]);
       const todoLogger = fromSource(todoSource);
       useSubscription(() => pipe(todoLogger, medium.run({ loggerSource })), []);
       useSubscription(() => pipe(todoMedium, medium.run({ todoSource })), [
@@ -30,12 +31,12 @@ export const TodoLayoutContainer = pipe(
       const state = useBehavior(todoSource.state);
 
       useEffect(() => {
-        todoSource.dispatch('getTodos')();
+        todoSource.on.getTodos.next();
       }, []);
 
       return createElement(Component, {
         todos: state.todos,
-        onToggleChecked: todoSource.dispatch('toggleDone'),
+        onToggleChecked: todoSource.on.toggleDone.next,
       });
     }),
   ),
