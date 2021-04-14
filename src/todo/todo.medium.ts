@@ -1,4 +1,4 @@
-import { effect, medium } from '@performance-artist/medium';
+import { effect } from '@performance-artist/medium';
 import { pipe } from 'fp-ts/lib/pipeable';
 import * as rxo from 'rxjs/operators';
 import { array, option } from 'fp-ts';
@@ -6,15 +6,16 @@ import { TodoSource } from './view/todo.source';
 import { TodoApi } from './todo.api';
 import { fromMedium } from 'logger/logger.medium';
 import { flow } from 'fp-ts/lib/function';
+import { selector } from '@performance-artist/fp-ts-adt';
 
 type Deps = {
   todoApi: TodoApi;
   todoSource: TodoSource;
 };
 
-export const rawTodoMedium = medium.map(
-  medium.id<Deps>()('todoApi', 'todoSource'),
-  deps => {
+export const rawTodoMedium = pipe(
+  selector.keys<Deps>()('todoApi', 'todoSource'),
+  selector.map(deps => {
     const { todoApi, todoSource } = deps;
 
     const setTodos = pipe(
@@ -22,7 +23,7 @@ export const rawTodoMedium = medium.map(
       effect.branch(
         flow(
           rxo.switchMap(todoApi.getTodos),
-          effect.tag('setTodos', todos =>
+          effect.partial(todos =>
             todoSource.state.modify(state => ({ ...state, todos })),
           ),
         ),
@@ -41,7 +42,7 @@ export const rawTodoMedium = medium.map(
               option.chain(array.findFirst(todo => todo.id === id)),
             ),
           ),
-          effect.tag('updateTodo', todo => {
+          effect.partial(todo => {
             if (option.isSome(todo)) {
               todoApi.updateTodo(todo.value);
             }
@@ -50,11 +51,11 @@ export const rawTodoMedium = medium.map(
       ),
     );
 
-    return {
+    return effect.tagObject({
       setTodos,
       updateTodo,
-    };
-  },
+    });
+  }),
 );
 
 export const todoMedium = fromMedium(rawTodoMedium);

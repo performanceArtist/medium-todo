@@ -1,20 +1,25 @@
-import { carrier, effect, medium, Source } from '@performance-artist/medium';
+import { selector } from '@performance-artist/fp-ts-adt';
+import { effect, medium, Source } from '@performance-artist/medium';
+import { AnyAction } from '@performance-artist/medium';
 import { record } from 'fp-ts';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { LoggerSource } from './view/logger.source';
 
 type LoggerDeps = {
   loggerSource: LoggerSource;
+  logSource: (action: AnyAction) => void;
+  logMedium: (action: AnyAction) => void;
 };
 
-export const fromSource = <S extends Source<any, any>>(s: S) =>
-  medium.map(medium.id<LoggerDeps>()('loggerSource'), deps => {
-    const { loggerSource } = deps;
+export const fromSource = pipe(
+  selector.keys<LoggerDeps>()('loggerSource', 'logMedium', 'logSource'),
+  selector.map(deps => (s: Source<any, any>) => {
+    const { loggerSource, logSource } = deps;
 
     const action$ = pipe(
       s.on,
       record.map(({ value }) => value),
-      carrier.mergeInputs,
+      medium.mergeInputs,
     );
 
     const addLogEntry = pipe(
@@ -27,21 +32,17 @@ export const fromSource = <S extends Source<any, any>>(s: S) =>
       ),
     );
 
-    const consoleLog = pipe(
-      action$,
-      effect.partial(action =>
-        console.log('[in]', action.type, action.payload),
-      ),
-    );
+    const consoleLog = pipe(action$, effect.partial(logSource));
 
     return effect.tagObject({ addLogEntry, consoleLog });
-  });
+  }),
+);
 
 export const fromMedium = medium.decorateAny(
-  medium.id<LoggerDeps>()('loggerSource'),
+  medium.id<LoggerDeps>()('loggerSource', 'logMedium', 'logSource'),
 )((deps, [_, effects]) => {
-  const { loggerSource } = deps;
-  const action$ = carrier.mergeInputs(effects);
+  const { loggerSource, logMedium } = deps;
+  const action$ = medium.mergeInputs(effects);
 
   const addLogEntry = pipe(
     action$,
@@ -56,10 +57,7 @@ export const fromMedium = medium.decorateAny(
     ),
   );
 
-  const consoleLog = pipe(
-    action$,
-    effect.partial(action => console.log('[out]', action.type, action.payload)),
-  );
+  const consoleLog = pipe(action$, effect.partial(logMedium));
 
   return effect.tagObject({ addLogEntry, consoleLog });
 });

@@ -7,20 +7,22 @@ import { todoMedium } from 'todo/todo.medium';
 import { useSubscription, useBehavior } from '@performance-artist/react-utils';
 import { medium, source } from '@performance-artist/medium';
 import { fromSource } from 'logger/logger.medium';
-import { LoggerSource } from 'logger/view/logger.source';
 
 export const TodoLayoutContainer = pipe(
   selector.combine(
     selector.defer(TodoLayout, 'todoSource'),
     selector.defer(todoMedium, 'todoSource'),
-    selector.key<LoggerSource>()('loggerSource'),
+    fromSource,
   ),
-  selector.map(([TodoLayout, todoMedium, loggerSource]) =>
+  selector.map(([TodoLayout, todoMedium, fromSource]) =>
     memo(() => {
       const todoSource = useMemo(makeTodoSource, []);
       useSubscription(() => source.subscribe(todoSource), [todoSource]);
       const todoLogger = fromSource(todoSource);
-      useSubscription(() => pipe(todoLogger, medium.run({ loggerSource })), []);
+      useSubscription(
+        () => pipe(todoLogger, medium.applyEffects, e => e.subscribe()),
+        [],
+      );
       useSubscription(() => pipe(todoMedium, medium.run({ todoSource })), [
         todoSource,
       ]);
