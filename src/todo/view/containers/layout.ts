@@ -6,34 +6,33 @@ import { TodoLayout } from '../components/layout';
 import { todoMedium } from 'todo/todo.medium';
 import { useSubscription, useBehavior } from '@performance-artist/react-utils';
 import { medium, source } from '@performance-artist/medium';
-import { fromSource } from 'logger/logger.medium';
+import { useEffectsLogger, useSourceLogger } from 'logger/hooks';
 
 export const TodoLayoutContainer = pipe(
   selector.combine(
     selector.defer(TodoLayout, 'todoSource'),
     selector.defer(todoMedium, 'todoSource'),
-    fromSource,
+    useSourceLogger,
+    useEffectsLogger,
   ),
-  selector.map(([TodoLayout, todoMedium, fromSource]) =>
+  selector.map(([TodoLayout, todoMedium, useSourceLogger, useEffectsLogger]) =>
     memo(() => {
       const todoSource = useMemo(makeTodoSource, []);
       useSubscription(() => source.subscribe(todoSource), [todoSource]);
-      const todoLogger = fromSource(todoSource);
-      useSubscription(
-        () => pipe(todoLogger, medium.applyEffects, e => e.subscribe()),
-        [],
-      );
-      useSubscription(() => pipe(todoMedium, medium.run({ todoSource })), [
-        todoSource,
-      ]);
+      useSourceLogger(todoSource);
+
+      const todoEffects = todoMedium.run({ todoSource });
+      useSubscription(() => medium.subscribe(todoEffects), [todoEffects]);
+      useEffectsLogger(todoEffects);
 
       const Component = useMemo(() => TodoLayout.run({ todoSource }), [
         todoSource,
       ]);
+
       const state = useBehavior(todoSource.state);
 
       useEffect(() => {
-        todoSource.on.getTodos.next();
+        todoSource.on.mount.next();
       }, []);
 
       return createElement(Component, {

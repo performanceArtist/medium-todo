@@ -4,7 +4,6 @@ import * as rxo from 'rxjs/operators';
 import { array, option } from 'fp-ts';
 import { TodoSource } from './view/todo.source';
 import { TodoApi } from './todo.api';
-import { fromMedium } from 'logger/logger.medium';
 import { flow } from 'fp-ts/lib/function';
 import { selector } from '@performance-artist/fp-ts-adt';
 
@@ -13,13 +12,13 @@ type Deps = {
   todoSource: TodoSource;
 };
 
-export const rawTodoMedium = pipe(
+export const todoMedium = pipe(
   selector.keys<Deps>()('todoApi', 'todoSource'),
   selector.map(deps => {
     const { todoApi, todoSource } = deps;
 
     const setTodos = pipe(
-      todoSource.on.getTodos.value,
+      todoSource.on.mount.value,
       effect.branch(
         flow(
           rxo.switchMap(todoApi.getTodos),
@@ -57,5 +56,3 @@ export const rawTodoMedium = pipe(
     });
   }),
 );
-
-export const todoMedium = fromMedium(rawTodoMedium);

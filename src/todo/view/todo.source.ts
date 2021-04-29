@@ -24,14 +24,14 @@ const initialState: TodoState = {
 export type TodoSource = SourceOf<
   TodoState,
   {
-    getTodos: void;
+    mount: void;
     toggleDone: number;
   }
 >;
 
 export const makeTodoSource = (): TodoSource =>
   source.create(initialState, {
-    getTodos: source.input(),
+    mount: source.input(),
     toggleDone: state => id => ({
       ...state,
       todos: pipe(

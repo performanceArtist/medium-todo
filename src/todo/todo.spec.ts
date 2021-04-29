@@ -2,11 +2,11 @@ import { requestResult } from '@performance-artist/fp-ts-adt';
 import { option } from 'fp-ts';
 import * as rx from 'rxjs';
 import { test } from '@performance-artist/medium';
-import { rawTodoMedium } from './todo.medium';
+import { todoMedium } from './todo.medium';
 import { makeTodoSource } from './view/todo.source';
 import { makeLoggerSource } from 'logger/view/logger.source';
 
-const withTodo = test.withMedium(rawTodoMedium);
+const withTodo = test.withMedium(todoMedium);
 
 describe('todo', () => {
   it(
@@ -23,7 +23,7 @@ describe('todo', () => {
       (deps, history, output) => {
         const { todoSource } = deps;
 
-        todoSource.on.getTodos.next();
+        todoSource.on.mount.next();
 
         expect(history.take()).toStrictEqual([
           output('setTodos')(requestResult.success([])),
